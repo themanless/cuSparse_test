@@ -27,7 +27,7 @@ int main(int argc, char*argv[])
     double *d_b = NULL;
     int *rankA = NULL;
     double *x = NULL;
-    double *p = NULL;
+    int *p = NULL;
     double *min_norm = NULL;
 
     const int m = 4;
@@ -36,7 +36,7 @@ int main(int argc, char*argv[])
     double tol = 1.e-12;
     const int csrRowPtrA[m+1] = {0, 1, 2, 3, 4};
     const int csrColIndA[nnzA] = {0, 0, 1, 1};
-    const int csrValA[nnzA] = {1.0, 2.0, 3.0, 4.0};
+    const double csrValA[nnzA] = {1.0, 2.0, 3.0, 4.0};
     const double b[m] = {1.0, 1.0, 1.0, 1.0};
     double h_x[n];
     //step2: create cusolver handle
@@ -72,29 +72,29 @@ int main(int argc, char*argv[])
     assert(cudaStat3 == cudaSuccess);
     assert(cudaStat4 == cudaSuccess);
 
-    cudaStat1 = cusolverSpDcsrlsqvqr(cusolverH,
+    cusolver_status = cusolverSpDcsrlsqvqrHost(cusolverH,
                   m,
                   n,
                   nnzA,
                   descrA,
-                  d_csrValA,
-                  d_csrRowPtrA,
-                  d_csrColIndA,
-                  d_b,
+                  csrValA,
+                  csrRowPtrA,
+                  csrColIndA,
+                  b,
                   tol,
                   rankA,
-                  x,
+                  h_x,
                   p,
                   min_norm);
-    assert(cudaStat1 == cudaSuccess);
+    assert(cusolver_status == cudaSuccess);
     
     //trans the result to host
-    cudaStat1 = cudaMemcpy(h_x, x, sizeof(double) * n, cudaMemcpyDeviceToHost);
-    assert(cudaStat1 == cudaSuccess);
+    //cudaStat1 = cudaMemcpy(h_x, x, sizeof(double) * n, cudaMemcpyDeviceToHost);
+    //assert(cudaStat1 == cudaSuccess);
 
     //print the result
-    for (int i=0; i<n; i++)
-        printf("x[%d] = %E", i, x[i]);
+    //for (int i=0; i<n; i++)
+        //printf("x[%d] = %E", i, h_x[i]);
     cudaFree(d_csrColIndA);
     cudaFree(d_csrValA);
     cudaFree(d_csrRowPtrA);
