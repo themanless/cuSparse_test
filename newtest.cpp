@@ -12,11 +12,11 @@ int main()
     cusparseHandle_t handle;    cusparseCreate(&handle);
 
     const int Nrows = 4;                        // --- Number of rows
-    const int Ncols = 4;                        // --- Number of columns
+    const int Ncols = 2;                        // --- Number of columns
     const int N     = Nrows;
 
     // --- Host side dense matrix
-    double *h_A_dense = (double*)malloc(Nrows*Ncols*sizeof(*h_A_dense));
+    /*double *h_A_dense = (double*)malloc(Nrows*Ncols*sizeof(*h_A_dense));
 
     // --- Column-major ordering
     h_A_dense[0] = 1.0f; h_A_dense[4] = 4.0f; h_A_dense[8]  = 0.0f; h_A_dense[12] = 0.0f; 
@@ -53,13 +53,17 @@ int main()
 
     cusparseDdense2csr(handle, Nrows, Ncols, descrA, d_A_dense, lda, d_nnzPerVector, d_A, d_A_RowIndices, d_A_ColIndices);
 
-    // --- Host side dense matrix
-    double *h_A = (double *)malloc(nnz * sizeof(*h_A));     
-    int *h_A_RowIndices = (int *)malloc((Nrows + 1) * sizeof(*h_A_RowIndices));
-    int *h_A_ColIndices = (int *)malloc(nnz * sizeof(*h_A_ColIndices));
-    cudaMemcpy(h_A, d_A, nnz*sizeof(*h_A), cudaMemcpyDeviceToHost);
+    // --- Host side dense matrix*/
+    cusparseMatDescr_t descrA;      cusparseCreateMatDescr(&descrA);
+    cusparseSetMatType      (descrA, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase (descrA, CUSPARSE_INDEX_BASE_ZERO);  
+    int nnz = 4;
+    double h_A[4] = {1.0, 2.0, 3.0, 4.0};
+    int h_A_RowIndices[5] = {0, 1, 2, 3, 4};
+    int h_A_ColIndices[4] = {0, 0, 1, 1};
+    /*cudaMemcpy(h_A, d_A, nnz*sizeof(*h_A), cudaMemcpyDeviceToHost);
     cudaMemcpy(h_A_RowIndices, d_A_RowIndices, (Nrows + 1) * sizeof(*h_A_RowIndices), cudaMemcpyDeviceToHost);
-    cudaMemcpy(h_A_ColIndices, d_A_ColIndices, nnz * sizeof(*h_A_ColIndices), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_A_ColIndices, d_A_ColIndices, nnz * sizeof(*h_A_ColIndices), cudaMemcpyDeviceToHost);*/
 
     for (int i = 0; i < nnz; ++i) printf("A[%i] = %.0f ", i, h_A[i]); printf("\n");
 
@@ -69,14 +73,14 @@ int main()
 
     // --- Allocating and defining dense host and device data vectors
     double *h_y = (double *)malloc(Nrows * sizeof(double)); 
-    h_y[0] = 100.0;  h_y[1] = 200.0; h_y[2] = 400.0; h_y[3] = 500.0;
+    h_y[0] = 1.0;  h_y[1] = 2.0; h_y[2] = 4.0; h_y[3] = 5.0;
 
-    double *d_y;        cudaMalloc(&d_y, Nrows * sizeof(double));  
-    cudaMemcpy(d_y, h_y, Nrows * sizeof(double), cudaMemcpyHostToDevice);
+    //double *d_y;        cudaMalloc(&d_y, Nrows * sizeof(double));  
+    //cudaMemcpy(d_y, h_y, Nrows * sizeof(double), cudaMemcpyHostToDevice);
 
     // --- Allocating the host and device side result vector
     double *h_x = (double *)malloc(Ncols * sizeof(double)); 
-    double *d_x;        cudaMalloc(&d_x, Ncols * sizeof(double));
+    //double *d_x;        cudaMalloc(&d_x, Ncols * sizeof(double));
 
     // --- CUDA solver initialization
     cusolverSpHandle_t solver_handle;
